@@ -1,0 +1,41 @@
+{
+  "name": "pixel-forge-mcp",
+  "version": "1.0.0-rc1",
+  "description": "Local MCP server for pixel sprite processing and Godot-friendly export workflows.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "npm run build && node dist/index.js",
+    "setup:py": "node scripts/setup-python.mjs",
+    "start": "node dist/index.js",
+    "test:pipeline": "node scripts/test-pipeline.mjs",
+    "test:pixelorama-bridge": "node scripts/test-pixelorama-bridge.mjs",
+    "test:animation": "node scripts/test-animation.mjs",
+    "test:godot-pack": "node scripts/test-godot-pack.mjs",
+    "test:godot-loader": "node scripts/test-godot-loader.mjs",
+    "test:monster-pack": "node scripts/test-monster-pack.mjs",
+    "test:saga-enemies": "node scripts/test-saga-enemies.mjs",
+    "test:family-ladder": "node scripts/test-family-ladder.mjs",
+    "test:world-pack": "node scripts/test-world-pack.mjs",
+    "test:all": "npm run build && npm run test:pipeline && npm run test:pixelorama-bridge && npm run test:animation && npm run test:godot-pack && npm run test:godot-loader && npm run test:monster-pack && npm run test:saga-enemies && npm run test:family-ladder && npm run test:world-pack"
+  },
+  "keywords": [
+    "mcp",
+    "godot",
+    "pixel-art",
+    "sprite-pipeline",
+    "pillow"
+  ],
+  "engines": {
+    "node": ">=18.18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "typescript": "^5.8.3"
+  }
+}

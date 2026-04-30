@@ -1,0 +1,12 @@
+{
+  "sprites": [
+    {
+      "id": "slime_t1",
+      "name": "Slime",
+      "category": "monsters",
+      "family": "ooze",
+      "tier": 1,
+      "spritePath": "res://content/art/monsters/slime_t1.png"
+    }
+  ]
+}

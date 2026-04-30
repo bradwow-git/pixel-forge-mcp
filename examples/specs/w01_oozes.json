@@ -1,0 +1,49 @@
+{
+  "packName": "w01_oozes",
+  "category": "monsters",
+  "family": "ooze",
+  "monsters": [
+    {
+      "id": "slime_t1",
+      "name": "Slime",
+      "tier": 1,
+      "sourcePath": "examples/source/slime.png",
+      "palette": "swamp",
+      "size": 32,
+      "abilities": [
+        "bounce"
+      ],
+      "drops": [
+        "gel"
+      ],
+      "tags": [
+        "starter",
+        "melee"
+      ]
+    },
+    {
+      "id": "acid_slime_t2",
+      "name": "Acid Slime",
+      "tier": 2,
+      "sourcePath": "examples/source/slime.png",
+      "palette": "toxic",
+      "size": 32,
+      "stats": {
+        "attack": 11,
+        "credits": 12
+      },
+      "abilities": [
+        "acid_splash"
+      ],
+      "drops": [
+        "acid_gel",
+        "slime_core"
+      ],
+      "tags": [
+        "elite",
+        "acid"
+      ]
+    }
+  ],
+  "manifestPath": "examples/manifests/test-sprites.json"
+}

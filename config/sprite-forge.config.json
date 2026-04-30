@@ -1,0 +1,10 @@
+{
+  "outputRoot": "examples/output",
+  "manifestCollectionKey": "sprites",
+  "godotProjectRoot": "examples/godot-project",
+  "pythonCommand": "python",
+  "pythonVenvPath": ".venv",
+  "enablePixeloramaBridge": false,
+  "pixeloramaExecutablePath": null,
+  "pixeloramaProjectTemplatePath": null
+}

@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.npm-cache/
+.pip-cache/
+.tmp/
+.venv/
+coverage/
+*.log
+.git-local/
+
+# Generated example artifacts
+examples/output/monsters/*.png
+examples/godot-project/content/art/
+examples/godot-import-pack/
+examples/pixelorama/
+examples/saga/enemies_*.json
+examples/saga/worlds/
+examples/specs/generated/
