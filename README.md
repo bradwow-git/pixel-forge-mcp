@@ -27,6 +27,7 @@ npm run dev
 - Optional Pixelorama bridge workspace creation
 - Godot import-pack generation
 - Godot 4 loader stub generation
+- Godot 4 editor plugin generation
 - Batch monster pack generation
 - Family tier ladder generation
 - World monster pack generation
@@ -80,6 +81,7 @@ npm run build
 npm run dev
 npm run test:all
 npm run test:pipeline
+npm run test:godot-plugin
 npm run test:monster-pack
 npm run test:world-pack
 ```
@@ -94,6 +96,7 @@ npm run test:world-pack
 - `test:animation`
 - `test:godot-pack`
 - `test:godot-loader`
+- `test:godot-plugin`
 - `test:monster-pack`
 - `test:saga-enemies`
 - `test:family-ladder`
@@ -123,10 +126,32 @@ Higher-level generation:
 - `export_from_pixelorama`
 - `create_godot_import_pack`
 - `create_godot_loader_stub`
+- `create_godot_editor_plugin`
 - `create_monster_pack`
 - `create_saga_enemy_data`
 - `create_family_tier_ladder`
 - `create_world_monster_pack`
+
+## Godot editor plugin example
+
+Generate a Godot 4 editor dock plugin into an import-pack folder:
+
+```json
+{
+  "outputDir": "examples/godot-import-pack",
+  "pluginName": "pixel_forge",
+  "displayName": "Pixel Forge",
+  "manifestPath": "res://content/sprite_manifest.json"
+}
+```
+
+This writes:
+
+- `examples/godot-import-pack/addons/pixel_forge/plugin.cfg`
+- `examples/godot-import-pack/addons/pixel_forge/pixel_forge_plugin.gd`
+- `examples/godot-import-pack/addons/pixel_forge/pixel_forge_dock.gd`
+- `examples/godot-import-pack/addons/pixel_forge/pixel_forge_dock.tscn`
+- `examples/godot-import-pack/addons/pixel_forge/README_PIXEL_FORGE_PLUGIN.md`
 
 ## Generated example artifacts
 

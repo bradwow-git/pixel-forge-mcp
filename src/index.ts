@@ -18,6 +18,10 @@ import {
   createGodotImportPackInputSchema
 } from "./tools/createGodotImportPack.js";
 import {
+  createGodotEditorPlugin,
+  createGodotEditorPluginInputSchema
+} from "./tools/createGodotEditorPlugin.js";
+import {
   createGodotLoaderStub,
   createGodotLoaderStubInputSchema
 } from "./tools/createGodotLoaderStub.js";
@@ -189,6 +193,23 @@ server.tool(
   createGodotLoaderStubInputSchema,
   async (input) => {
     const result = await createGodotLoaderStub(input);
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(result, null, 2)
+        }
+      ]
+    };
+  }
+);
+
+server.tool(
+  "create_godot_editor_plugin",
+  "Generate a Godot 4 editor plugin dock for browsing Pixel Forge sprite manifests inside the editor.",
+  createGodotEditorPluginInputSchema,
+  async (input) => {
+    const result = await createGodotEditorPlugin(input);
     return {
       content: [
         {

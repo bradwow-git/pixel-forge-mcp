@@ -14,11 +14,12 @@
     "test:animation": "node scripts/test-animation.mjs",
     "test:godot-pack": "node scripts/test-godot-pack.mjs",
     "test:godot-loader": "node scripts/test-godot-loader.mjs",
+    "test:godot-plugin": "node scripts/test-godot-plugin.mjs",
     "test:monster-pack": "node scripts/test-monster-pack.mjs",
     "test:saga-enemies": "node scripts/test-saga-enemies.mjs",
     "test:family-ladder": "node scripts/test-family-ladder.mjs",
     "test:world-pack": "node scripts/test-world-pack.mjs",
-    "test:all": "npm run build && npm run test:pipeline && npm run test:pixelorama-bridge && npm run test:animation && npm run test:godot-pack && npm run test:godot-loader && npm run test:monster-pack && npm run test:saga-enemies && npm run test:family-ladder && npm run test:world-pack"
+    "test:all": "npm run build && npm run test:pipeline && npm run test:pixelorama-bridge && npm run test:animation && npm run test:godot-pack && npm run test:godot-loader && npm run test:godot-plugin && npm run test:monster-pack && npm run test:saga-enemies && npm run test:family-ladder && npm run test:world-pack"
   },
   "keywords": [
     "mcp",
