@@ -18,6 +18,10 @@ import {
   createGodotImportPackInputSchema
 } from "./tools/createGodotImportPack.js";
 import {
+  createGodotMonsterScenes,
+  createGodotMonsterScenesInputSchema
+} from "./tools/createGodotMonsterScenes.js";
+import {
   createGodotEditorPlugin,
   createGodotEditorPluginInputSchema
 } from "./tools/createGodotEditorPlugin.js";
@@ -210,6 +214,23 @@ server.tool(
   createGodotEditorPluginInputSchema,
   async (input) => {
     const result = await createGodotEditorPlugin(input);
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(result, null, 2)
+        }
+      ]
+    };
+  }
+);
+
+server.tool(
+  "create_godot_monster_scenes",
+  "Generate Godot 4 monster scenes from sprite manifest entries, using Sprite2D for static sprites and AnimatedSprite2D for animation entries.",
+  createGodotMonsterScenesInputSchema,
+  async (input) => {
+    const result = await createGodotMonsterScenes(input);
     return {
       content: [
         {
