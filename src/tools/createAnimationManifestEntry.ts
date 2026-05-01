@@ -14,7 +14,8 @@ export const createAnimationManifestEntryInputSchema = {
   frameCount: z.number().int().min(1),
   fps: z.number().positive(),
   loop: z.boolean(),
-  animation: z.string().min(1)
+  animation: z.string().min(1),
+  stripDirection: z.enum(["horizontal", "vertical"]).optional().default("horizontal")
 };
 
 type CreateAnimationManifestEntryInput = z.infer<
@@ -34,6 +35,7 @@ type AnimationManifestEntry = {
   fps: number;
   loop: boolean;
   animation: string;
+  stripDirection: "horizontal" | "vertical";
 };
 
 export async function createAnimationManifestEntry(
@@ -51,7 +53,8 @@ export async function createAnimationManifestEntry(
     frameCount: input.frameCount,
     fps: input.fps,
     loop: input.loop,
-    animation: input.animation
+    animation: input.animation,
+    stripDirection: input.stripDirection ?? "horizontal"
   };
 
   return upsertManifestEntry(input.manifestPath, nextEntry);

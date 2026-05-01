@@ -85,6 +85,7 @@ npm run test:all
 npm run test:pipeline
 npm run test:godot-plugin
 npm run test:spriteframes
+npm run test:spriteframes-direction
 npm run test:godot-scenes
 npm run test:monster-pack
 npm run test:world-pack
@@ -102,6 +103,7 @@ npm run test:world-pack
 - `test:godot-loader`
 - `test:godot-plugin`
 - `test:spriteframes`
+- `test:spriteframes-direction`
 - `test:godot-scenes`
 - `test:monster-pack`
 - `test:saga-enemies`
@@ -199,7 +201,13 @@ This writes:
 
 Current limitation:
 
-- SpriteFrames generation currently assumes horizontal strip layout because strip direction is not yet stored in the manifest.
+- SpriteFrames generation supports `stripDirection: "horizontal" | "vertical"`.
+- If `stripDirection` is omitted, Pixel Forge defaults it to `horizontal`.
+
+Animation manifest note:
+
+- `stripDirection: "horizontal"` means `x = frameIndex * frameWidth`, `y = 0`
+- `stripDirection: "vertical"` means `x = 0`, `y = frameIndex * frameHeight`
 
 ## Generated example artifacts
 

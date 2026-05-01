@@ -20,7 +20,8 @@
       "frameCount": 2,
       "fps": 6,
       "loop": true,
-      "animation": "idle"
+      "animation": "idle",
+      "stripDirection": "horizontal"
     },
     {
       "id": "acid_slime_t2",
@@ -45,6 +46,21 @@
       "family": "beast",
       "tier": 1,
       "spritePath": "res://content/art/monsters/fang_pup_t1.png"
+    },
+    {
+      "id": "slime_t1_vertical_idle",
+      "name": "Slime Vertical Idle",
+      "category": "monsters",
+      "family": "ooze",
+      "tier": 1,
+      "spritePath": "res://content/art/monsters/slime_vertical_strip.png",
+      "frameWidth": 32,
+      "frameHeight": 32,
+      "frameCount": 2,
+      "fps": 6,
+      "loop": true,
+      "animation": "idle_vertical",
+      "stripDirection": "vertical"
     }
   ]
 }

@@ -55,8 +55,8 @@ async function main() {
   }
 
   const requiredReadmeSnippets = [
-    "horizontal strips",
-    "Vertical strip metadata",
+    "may be horizontal or vertical",
+    "defaults to `horizontal`",
     "SpriteFrames",
     "limitations"
   ];

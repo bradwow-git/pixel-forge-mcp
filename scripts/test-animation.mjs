@@ -53,7 +53,8 @@ async function main() {
     frameCount: stripResult.framePaths.length,
     fps: 6,
     loop: true,
-    animation: "idle"
+    animation: "idle",
+    stripDirection: "horizontal"
   });
 
   const manifestPath = path.join(projectRoot, "examples", "manifests", "test-sprites.json");
@@ -67,6 +68,10 @@ async function main() {
 
   if (matchingEntry.frameCount !== 2) {
     throw new Error("Animation manifest frameCount did not match the expected frame count.");
+  }
+
+  if (matchingEntry.stripDirection !== "horizontal") {
+    throw new Error("Animation manifest stripDirection did not match the expected direction.");
   }
 
   console.log(
