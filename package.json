@@ -11,6 +11,7 @@
     "start": "node dist/index.js",
     "test:pipeline": "node scripts/test-pipeline.mjs",
     "test:pixelorama-bridge": "node scripts/test-pixelorama-bridge.mjs",
+    "test:pixelorama-real": "node scripts/test-pixelorama-real.mjs",
     "test:animation": "node scripts/test-animation.mjs",
     "test:godot-pack": "node scripts/test-godot-pack.mjs",
     "test:godot-loader": "node scripts/test-godot-loader.mjs",

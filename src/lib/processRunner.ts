@@ -15,6 +15,12 @@ export interface ProcessResult {
   stderr: string;
 }
 
+export interface CommandOptions {
+  cwd?: string;
+  env?: NodeJS.ProcessEnv;
+  timeoutMs?: number;
+}
+
 async function resolveVenvSitePackagesPath(): Promise<string | null> {
   const config = await loadConfig();
   const venvRoot = resolveProjectPath(config.pythonVenvPath);
@@ -86,6 +92,70 @@ export async function runPythonPipeline(scriptName: string, args: string[]): Pro
       }
 
       reject(new Error(`Python pipeline "${scriptName}" failed: exit code ${code}`));
+    });
+  });
+}
+
+export async function runLocalCommand(
+  command: string,
+  args: string[],
+  options: CommandOptions = {}
+): Promise<ProcessResult> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: options.cwd ?? getProjectRoot(),
+      env: options.env ?? process.env,
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    let stdout = "";
+    let stderr = "";
+    let timedOut = false;
+
+    const timeoutHandle =
+      typeof options.timeoutMs === "number" && options.timeoutMs > 0
+        ? setTimeout(() => {
+            timedOut = true;
+            child.kill();
+          }, options.timeoutMs)
+        : null;
+
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString();
+    });
+
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+
+    child.on("error", (error) => {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
+
+      reject(new Error(`Failed to start command "${command}". ${error.message}`));
+    });
+
+    child.on("close", (code) => {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
+
+      if (timedOut) {
+        reject(new Error(`Command timed out after ${options.timeoutMs}ms: ${command}`));
+        return;
+      }
+
+      if (code === 0) {
+        resolve({ stdout, stderr });
+        return;
+      }
+
+      reject(
+        new Error(
+          `Command failed with exit code ${code}: ${command}\n${stderr || stdout}`.trim()
+        )
+      );
     });
   });
 }

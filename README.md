@@ -201,3 +201,4 @@ The repo ignores those generated artifact areas where appropriate so the local w
 - `docs/ROADMAP.md`
 - `docs/ARCHITECTURE.md`
 - `docs/CODEX_HANDOFF.md`
+- `docs/PIXELORAMA_CLI.md`

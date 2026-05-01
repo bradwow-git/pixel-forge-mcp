@@ -4,7 +4,7 @@
   "godotProjectRoot": "examples/godot-project",
   "pythonCommand": "python",
   "pythonVenvPath": ".venv",
-  "enablePixeloramaBridge": false,
-  "pixeloramaExecutablePath": null,
+  "enablePixeloramaBridge": true,
+  "pixeloramaExecutablePath": "C:/Users/bradw/OneDrive/Documents/Pixelorama/Pixelorama.exe",
   "pixeloramaProjectTemplatePath": null
 }
