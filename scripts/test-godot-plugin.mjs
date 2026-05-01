@@ -76,9 +76,14 @@ async function main() {
     "@tool",
     "extends Control",
     '@export var manifest_path := "res://content/sprite_manifest.json"',
+    "const CONTENT_SOURCE_ROOT := \"res://addons/pixel_forge/../../content\"",
+    "const CONTENT_TARGET_ROOT := \"res://content\"",
     "FileAccess.file_exists(manifest_path)",
+    "DirAccess.make_dir_recursive_absolute(target_dir)",
     "JSON.new()",
     "DisplayServer.clipboard_set(_selected_sprite_path)",
+    "func _on_install_pressed() -> void:",
+    "func _install_content_pack() -> Dictionary:",
     'Manifest field \'sprites\' must be an Array.'
   ];
 
@@ -91,6 +96,9 @@ async function main() {
   const requiredDockSceneSnippets = [
     'script = ExtResource("1")',
     'path="res://addons/pixel_forge/pixel_forge_dock.gd"',
+    'name="InstallButton"',
+    'text = "Install Content Pack"',
+    'name="StatusLabel"',
     'name="CategoryFilter"',
     'name="SpriteList"',
     'name="DetailsText"'
@@ -106,7 +114,10 @@ async function main() {
     "Project Settings > Plugins",
     "res://content/",
     "sprite_manifest.json",
-    "Copy Sprite Path"
+    "Copy Sprite Path",
+    "Install Content Pack",
+    "overwrite",
+    "Missing source folders are reported as warnings"
   ];
 
   for (const snippet of requiredReadmeSnippets) {

@@ -163,6 +163,12 @@ This writes:
 - `examples/godot-import-pack/addons/pixel_forge/pixel_forge_dock.tscn`
 - `examples/godot-import-pack/addons/pixel_forge/README_PIXEL_FORGE_PLUGIN.md`
 
+The generated dock now includes:
+
+- `Refresh Manifest`
+- `Install Content Pack`
+- a status label for success and warning feedback
+
 ## Godot monster scenes example
 
 Generate Godot 4 monster scenes from the portable import-pack manifest:

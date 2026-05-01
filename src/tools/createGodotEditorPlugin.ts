@@ -55,6 +55,11 @@ function buildDockScript(displayName: string, manifestPath: string): string {
 extends Control
 
 @export var manifest_path := "${manifestPath}"
+@export var dry_run_install: bool = false
+
+const CONTENT_SOURCE_ROOT := "res://addons/pixel_forge/../../content"
+const CONTENT_TARGET_ROOT := "res://content"
+const CONTENT_SUBDIRECTORIES := ["art", "resources", "scenes", "scripts"]
 
 var _entries: Array[Dictionary] = []
 var _filtered_entries: Array[Dictionary] = []
@@ -63,18 +68,22 @@ var _selected_sprite_path: String = ""
 @onready var _header_label: Label = %HeaderLabel
 @onready var _count_label: Label = %CountLabel
 @onready var _reload_button: Button = %ReloadButton
+@onready var _install_button: Button = %InstallButton
 @onready var _category_filter: OptionButton = %CategoryFilter
 @onready var _sprite_list: ItemList = %SpriteList
 @onready var _details_text: RichTextLabel = %DetailsText
 @onready var _copy_path_button: Button = %CopyPathButton
+@onready var _status_label: Label = %StatusLabel
 
 
 func _ready() -> void:
 \t_header_label.text = "${displayName}"
 \t_reload_button.pressed.connect(_on_reload_pressed)
+\t_install_button.pressed.connect(_on_install_pressed)
 \t_category_filter.item_selected.connect(_on_category_selected)
 \t_sprite_list.item_selected.connect(_on_sprite_selected)
 \t_copy_path_button.pressed.connect(_on_copy_path_pressed)
+\t_set_status_label("Ready.")
 \tload_manifest()
 
 
@@ -175,11 +184,19 @@ func _apply_category_filter() -> void:
 \t_count_label.text = "Sprites: %d" % _filtered_entries.size()
 \tif _filtered_entries.is_empty():
 \t\t_set_details_text("No sprites match the current filter.")
+\t\t_set_status_label("Manifest loaded with no matching sprites.")
+\telse:
+\t\t_set_status_label("Manifest loaded successfully.")
 
 
 func _set_status(message: String) -> void:
 \t_count_label.text = "Sprites: 0"
 \t_set_details_text(message)
+\t_set_status_label(message)
+
+
+func _set_status_label(message: String) -> void:
+\t_status_label.text = "Status: %s" % message
 
 
 func _set_details_text(message: String) -> void:
@@ -212,6 +229,12 @@ func _on_reload_pressed() -> void:
 \tload_manifest()
 
 
+func _on_install_pressed() -> void:
+\tvar result := _install_content_pack()
+\t_set_details_text(result.get("log", ""))
+\t_set_status_label(String(result.get("summary", "Install completed.")))
+
+
 func _on_category_selected(_index: int) -> void:
 \t_apply_category_filter()
 
@@ -230,6 +253,130 @@ func _on_copy_path_pressed() -> void:
 \tif _selected_sprite_path.is_empty():
 \t\treturn
 \tDisplayServer.clipboard_set(_selected_sprite_path)
+\t_set_status_label("Copied sprite path to clipboard.")
+
+
+func _install_content_pack() -> Dictionary:
+\tvar source_root := CONTENT_SOURCE_ROOT
+\tvar target_root := CONTENT_TARGET_ROOT
+\tvar log_lines: Array[String] = []
+\tvar copied_files := 0
+\tvar skipped_files := 0
+\tvar warnings := 0
+
+\tif ProjectSettings.globalize_path(source_root) == ProjectSettings.globalize_path(target_root):
+\t\tvar message := "Content source already resolves to res://content/. No copy was needed."
+\t\treturn {
+\t\t\t"summary": message,
+\t\t\t"log": message
+\t\t}
+
+\tfor subdir in CONTENT_SUBDIRECTORIES:
+\t\tvar source_dir := "%s/%s" % [source_root, subdir]
+\t\tvar target_dir := "%s/%s" % [target_root, subdir]
+
+\t\tDirAccess.make_dir_recursive_absolute(target_dir)
+
+\t\tif not DirAccess.dir_exists_absolute(source_dir):
+\t\t\twarnings += 1
+\t\t\tlog_lines.append("Warning: missing source folder %s" % source_dir)
+\t\t\tcontinue
+
+\t\tvar copy_result := _copy_directory_recursive(source_dir, target_dir, dry_run_install)
+\t\tcopied_files += int(copy_result.get("copied_files", 0))
+\t\tskipped_files += int(copy_result.get("skipped_files", 0))
+\t\twarnings += int(copy_result.get("warnings", 0))
+\t\tvar copy_log: Array = copy_result.get("log_lines", [])
+\t\tfor line_variant in copy_log:
+\t\t\tlog_lines.append(String(line_variant))
+
+\tvar summary := "Installed %d file(s)" % copied_files
+\tif dry_run_install:
+\t\tsummary = "Dry run complete. Would install %d file(s)" % copied_files
+\tif skipped_files > 0:
+\t\tsummary += ", skipped %d" % skipped_files
+\tif warnings > 0:
+\t\tsummary += ", warnings %d" % warnings
+
+\tif log_lines.is_empty():
+\t\tlog_lines.append(summary)
+
+\treturn {
+\t\t"summary": summary,
+\t\t"log": "\\n".join(log_lines)
+\t}
+
+
+func _copy_directory_recursive(source_dir: String, target_dir: String, dry_run: bool) -> Dictionary:
+\tvar log_lines: Array[String] = []
+\tvar copied_files := 0
+\tvar skipped_files := 0
+\tvar warnings := 0
+\tvar dir := DirAccess.open(source_dir)
+
+\tif dir == null:
+\t\treturn {
+\t\t\t"copied_files": 0,
+\t\t\t"skipped_files": 0,
+\t\t\t"warnings": 1,
+\t\t\t"log_lines": ["Warning: unable to open source folder %s" % source_dir]
+\t\t}
+
+\tdir.list_dir_begin()
+\tvar entry_name := dir.get_next()
+\twhile entry_name != "":
+\t\tif entry_name == "." or entry_name == "..":
+\t\t\tentry_name = dir.get_next()
+\t\t\tcontinue
+
+\t\tvar source_path := "%s/%s" % [source_dir, entry_name]
+\t\tvar target_path := "%s/%s" % [target_dir, entry_name]
+
+\t\tif dir.current_is_dir():
+\t\t\tDirAccess.make_dir_recursive_absolute(target_path)
+\t\t\tvar nested_result := _copy_directory_recursive(source_path, target_path, dry_run)
+\t\t\tcopied_files += int(nested_result.get("copied_files", 0))
+\t\t\tskipped_files += int(nested_result.get("skipped_files", 0))
+\t\t\twarnings += int(nested_result.get("warnings", 0))
+\t\t\tvar nested_log: Array = nested_result.get("log_lines", [])
+\t\t\tfor line_variant in nested_log:
+\t\t\t\tlog_lines.append(String(line_variant))
+\t\telse:
+\t\t\tif ProjectSettings.globalize_path(source_path) == ProjectSettings.globalize_path(target_path):
+\t\t\t\tskipped_files += 1
+\t\t\t\tlog_lines.append("Skipped already-installed file %s" % target_path)
+\t\t\telif dry_run:
+\t\t\t\tcopied_files += 1
+\t\t\t\tlog_lines.append("Dry run: would copy %s -> %s" % [source_path, target_path])
+\t\t\telse:
+\t\t\t\tvar source_file := FileAccess.open(source_path, FileAccess.READ)
+\t\t\t\tif source_file == null:
+\t\t\t\t\twarnings += 1
+\t\t\t\t\tlog_lines.append("Warning: unable to read %s" % source_path)
+\t\t\t\telse:
+\t\t\t\t\tvar bytes := source_file.get_buffer(source_file.get_length())
+\t\t\t\t\tsource_file.close()
+\t\t\t\t\tDirAccess.make_dir_recursive_absolute(target_dir)
+\t\t\t\t\tvar target_file := FileAccess.open(target_path, FileAccess.WRITE)
+\t\t\t\t\tif target_file == null:
+\t\t\t\t\t\twarnings += 1
+\t\t\t\t\t\tlog_lines.append("Warning: unable to write %s" % target_path)
+\t\t\t\t\telse:
+\t\t\t\t\t\ttarget_file.store_buffer(bytes)
+\t\t\t\t\t\ttarget_file.close()
+\t\t\t\t\t\tcopied_files += 1
+\t\t\t\t\t\tlog_lines.append("Copied %s -> %s" % [source_path, target_path])
+
+\t\tentry_name = dir.get_next()
+
+\tdir.list_dir_end()
+
+\treturn {
+\t\t"copied_files": copied_files,
+\t\t"skipped_files": skipped_files,
+\t\t"warnings": warnings,
+\t\t"log_lines": log_lines
+\t}
 `;
 }
 
@@ -256,7 +403,11 @@ theme_override_constants/separation = 8
 
 [node name="ReloadButton" type="Button" parent="Toolbar"]
 unique_name_in_owner = true
-text = "Reload Manifest"
+text = "Refresh Manifest"
+
+[node name="InstallButton" type="Button" parent="Toolbar"]
+unique_name_in_owner = true
+text = "Install Content Pack"
 
 [node name="CountLabel" type="Label" parent="Toolbar"]
 unique_name_in_owner = true
@@ -288,6 +439,11 @@ scroll_active = true
 unique_name_in_owner = true
 text = "Copy Sprite Path"
 disabled = true
+
+[node name="StatusLabel" type="Label" parent="."]
+unique_name_in_owner = true
+autowrap_mode = 3
+text = "Status: Ready."
 `;
 }
 
@@ -313,11 +469,29 @@ This folder was generated by \`pixel-forge-mcp\`.
 
 Once enabled, the plugin adds a dock on the right side of the editor. Use it to:
 
-- reload \`sprite_manifest.json\`
+- refresh \`sprite_manifest.json\`
 - filter sprites by category
 - browse sprite ids and names
 - inspect sprite paths and animation metadata
 - use the **Copy Sprite Path** button to copy the selected sprite path into the clipboard
+- use **Install Content Pack** to copy bundled Pixel Forge content into \`res://content/\`
+
+## Install button behavior
+
+- The dock looks for a sibling \`content/\` folder relative to the plugin bundle.
+- It copies files into \`res://content/\`.
+- It ensures the expected directories exist: \`art/\`, \`resources/\`, \`scenes/\`, and \`scripts/\`.
+- Existing files overwrite earlier versions safely.
+- Missing source folders are reported as warnings instead of crashing the plugin.
+- If the content source already resolves to \`res://content/\`, the dock reports that the content is already in place.
+
+## Expected folder structure
+
+- \`res://addons/${pluginName}/\`
+- \`res://content/art/\`
+- \`res://content/resources/\`
+- \`res://content/scenes/\`
+- \`res://content/scripts/\`
 
 The plugin expects the manifest at \`res://content/sprite_manifest.json\` unless you regenerate it with a different manifest path.
 `;
