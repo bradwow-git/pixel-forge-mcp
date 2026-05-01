@@ -39,6 +39,8 @@ var _dock: Control
 
 func _enter_tree() -> void:
 \t_dock = DOCK_SCENE.instantiate()
+\tif _dock.has_method("set_editor_interface"):
+\t\t_dock.call("set_editor_interface", get_editor_interface())
 \tadd_control_to_dock(DOCK_SLOT_RIGHT_UL, _dock)
 
 
@@ -60,15 +62,19 @@ extends Control
 const CONTENT_SOURCE_ROOT := "res://addons/pixel_forge/../../content"
 const CONTENT_TARGET_ROOT := "res://content"
 const CONTENT_SUBDIRECTORIES := ["art", "resources", "scenes", "scripts"]
+const TEST_SCENE_PATH := "res://content/scenes/test/PixelForgeMonsterTest.tscn"
 
 var _entries: Array[Dictionary] = []
 var _filtered_entries: Array[Dictionary] = []
 var _selected_sprite_path: String = ""
+var _editor_interface: EditorInterface
 
 @onready var _header_label: Label = %HeaderLabel
 @onready var _count_label: Label = %CountLabel
 @onready var _reload_button: Button = %ReloadButton
 @onready var _install_button: Button = %InstallButton
+@onready var _open_scene_button: Button = %OpenSceneButton
+@onready var _create_test_scene_button: Button = %CreateTestSceneButton
 @onready var _category_filter: OptionButton = %CategoryFilter
 @onready var _sprite_list: ItemList = %SpriteList
 @onready var _details_text: RichTextLabel = %DetailsText
@@ -76,13 +82,21 @@ var _selected_sprite_path: String = ""
 @onready var _status_label: Label = %StatusLabel
 
 
+func set_editor_interface(editor_interface: EditorInterface) -> void:
+\t_editor_interface = editor_interface
+
+
 func _ready() -> void:
 \t_header_label.text = "${displayName}"
 \t_reload_button.pressed.connect(_on_reload_pressed)
 \t_install_button.pressed.connect(_on_install_pressed)
+\t_open_scene_button.pressed.connect(_on_open_scene_pressed)
+\t_create_test_scene_button.pressed.connect(_on_create_test_scene_pressed)
 \t_category_filter.item_selected.connect(_on_category_selected)
 \t_sprite_list.item_selected.connect(_on_sprite_selected)
 \t_copy_path_button.pressed.connect(_on_copy_path_pressed)
+\t_open_scene_button.disabled = true
+\t_create_test_scene_button.disabled = true
 \t_set_status_label("Ready.")
 \tload_manifest()
 
@@ -92,6 +106,8 @@ func load_manifest() -> void:
 \t_filtered_entries.clear()
 \t_selected_sprite_path = ""
 \t_copy_path_button.disabled = true
+\t_open_scene_button.disabled = true
+\t_create_test_scene_button.disabled = true
 \t_sprite_list.clear()
 \t_details_text.clear()
 
@@ -165,6 +181,8 @@ func _apply_category_filter() -> void:
 \t_details_text.clear()
 \t_selected_sprite_path = ""
 \t_copy_path_button.disabled = true
+\t_open_scene_button.disabled = true
+\t_create_test_scene_button.disabled = true
 
 \tvar selected_category := ""
 \tif _category_filter.selected > 0:
@@ -206,12 +224,14 @@ func _set_details_text(message: String) -> void:
 
 func _format_entry_details(entry: Dictionary) -> String:
 \tvar lines: Array[String] = []
+\tvar scene_path := _infer_scene_path(entry)
 \tlines.append("ID: %s" % String(entry.get("id", "")))
 \tlines.append("Name: %s" % String(entry.get("name", "")))
 \tlines.append("Category: %s" % String(entry.get("category", "")))
 \tlines.append("Family: %s" % String(entry.get("family", "")))
 \tlines.append("Tier: %s" % String(entry.get("tier", "")))
 \tlines.append("Sprite Path: %s" % String(entry.get("spritePath", "")))
+\tlines.append("Scene Path: %s" % scene_path)
 
 \tif entry.has("frameCount"):
 \t\tlines.append("")
@@ -246,6 +266,8 @@ func _on_sprite_selected(index: int) -> void:
 \tvar entry := _filtered_entries[index]
 \t_selected_sprite_path = String(entry.get("spritePath", ""))
 \t_copy_path_button.disabled = _selected_sprite_path.is_empty()
+\t_open_scene_button.disabled = false
+\t_create_test_scene_button.disabled = false
 \t_set_details_text(_format_entry_details(entry))
 
 
@@ -254,6 +276,134 @@ func _on_copy_path_pressed() -> void:
 \t\treturn
 \tDisplayServer.clipboard_set(_selected_sprite_path)
 \t_set_status_label("Copied sprite path to clipboard.")
+
+
+func _on_open_scene_pressed() -> void:
+\tvar entry := _get_selected_entry()
+\tif entry.is_empty():
+\t\t_set_status_label("Select a monster entry before opening a scene.")
+\t\treturn
+
+\tvar scene_path := _infer_scene_path(entry)
+\tif scene_path.is_empty():
+\t\t_set_status_label("No scene path is available for the selected monster.")
+\t\treturn
+
+\tif not ResourceLoader.exists(scene_path):
+\t\t_set_status_label("Monster scene not found at %s" % scene_path)
+\t\treturn
+
+\tif _editor_interface == null:
+\t\t_set_status_label("Editor interface is unavailable. Reopen the plugin dock and try again.")
+\t\treturn
+
+\t_editor_interface.open_scene_from_path(scene_path)
+\t_set_status_label("Opened monster scene %s" % scene_path)
+
+
+func _on_create_test_scene_pressed() -> void:
+\tvar entry := _get_selected_entry()
+\tif entry.is_empty():
+\t\t_set_status_label("Select a monster entry before creating a test scene.")
+\t\treturn
+
+\tvar test_scene_result := _create_test_scene(entry)
+\t_set_details_text(String(test_scene_result.get("log", "")))
+\t_set_status_label(String(test_scene_result.get("summary", "Test scene generated.")))
+
+
+func _get_selected_entry() -> Dictionary:
+\tvar selected_items := _sprite_list.get_selected_items()
+\tif selected_items.is_empty():
+\t\treturn {}
+
+\tvar index := int(selected_items[0])
+\tif index < 0 or index >= _filtered_entries.size():
+\t\treturn {}
+
+\treturn _filtered_entries[index]
+
+
+func _infer_scene_path(entry: Dictionary) -> String:
+\tvar configured_scene_path := String(entry.get("scenePath", ""))
+\tif not configured_scene_path.is_empty():
+\t\treturn configured_scene_path
+
+\tvar sprite_id := String(entry.get("id", ""))
+\tif sprite_id.is_empty():
+\t\treturn ""
+
+\treturn "res://content/scenes/monsters/%s.tscn" % sprite_id
+
+
+func _create_test_scene(entry: Dictionary) -> Dictionary:
+\tvar summary_lines: Array[String] = []
+\tvar test_scene_dir := TEST_SCENE_PATH.get_base_dir()
+\tDirAccess.make_dir_recursive_absolute(test_scene_dir)
+
+\tvar root := Node2D.new()
+\troot.name = "PixelForgeMonsterTest"
+
+\tvar scene_path := _infer_scene_path(entry)
+\tif not scene_path.is_empty() and ResourceLoader.exists(scene_path):
+\t\tvar monster_scene := load(scene_path) as PackedScene
+\t\tif monster_scene != null:
+\t\t\tvar monster_instance := monster_scene.instantiate()
+\t\t\tmonster_instance.name = "SelectedMonster"
+\t\t\troot.add_child(monster_instance)
+\t\t\tvar owner_root := root
+\t\t\tmonster_instance.owner = owner_root
+\t\t\tsummary_lines.append("Instanced monster scene %s" % scene_path)
+\t\telse:
+\t\t\tsummary_lines.append("Warning: scene exists but could not be instantiated: %s" % scene_path)
+\telse:
+\t\tsummary_lines.append("Warning: monster scene not found. Test scene was created without a monster instance.")
+
+\tvar camera := Camera2D.new()
+\tcamera.name = "Camera2D"
+\tcamera.position = Vector2.ZERO
+\tenable_camera(camera)
+\troot.add_child(camera)
+\tcamera.owner = root
+
+\tvar light := PointLight2D.new()
+\tlight.name = "PointLight2D"
+\tlight.position = Vector2.ZERO
+\tlight.energy = 0.75
+\troot.add_child(light)
+\tlight.owner = root
+
+\tvar packed_scene := PackedScene.new()
+\tvar pack_error := packed_scene.pack(root)
+\tif pack_error != OK:
+\t\troot.free()
+\t\treturn {
+\t\t\t"summary": "Failed to pack the test scene.",
+\t\t\t"log": "PackedScene.pack returned error code %s" % String(pack_error)
+\t\t}
+
+\tvar save_error := ResourceSaver.save(packed_scene, TEST_SCENE_PATH)
+\troot.free()
+\tif save_error != OK:
+\t\treturn {
+\t\t\t"summary": "Failed to save the test scene.",
+\t\t\t"log": "ResourceSaver.save returned error code %s" % String(save_error)
+\t\t}
+
+\tif _editor_interface != null:
+\t\t_editor_interface.open_scene_from_path(TEST_SCENE_PATH)
+\t\tsummary_lines.append("Opened test scene in the editor.")
+\telse:
+\t\tsummary_lines.append("Warning: editor interface unavailable, so the new test scene was not opened automatically.")
+
+\treturn {
+\t\t"summary": "Created test scene at %s" % TEST_SCENE_PATH,
+\t\t"log": "\\n".join(summary_lines)
+\t}
+
+
+func enable_camera(camera: Camera2D) -> void:
+\tcamera.enabled = true
 
 
 func _install_content_pack() -> Dictionary:
@@ -409,6 +559,16 @@ text = "Refresh Manifest"
 unique_name_in_owner = true
 text = "Install Content Pack"
 
+[node name="OpenSceneButton" type="Button" parent="Toolbar"]
+unique_name_in_owner = true
+text = "Open Monster Scene"
+disabled = true
+
+[node name="CreateTestSceneButton" type="Button" parent="Toolbar"]
+unique_name_in_owner = true
+text = "Create Test Scene"
+disabled = true
+
 [node name="CountLabel" type="Label" parent="Toolbar"]
 unique_name_in_owner = true
 size_flags_horizontal = 3
@@ -475,6 +635,8 @@ Once enabled, the plugin adds a dock on the right side of the editor. Use it to:
 - inspect sprite paths and animation metadata
 - use the **Copy Sprite Path** button to copy the selected sprite path into the clipboard
 - use **Install Content Pack** to copy bundled Pixel Forge content into \`res://content/\`
+- use **Open Monster Scene** to open the selected monster scene in the Godot editor
+- use **Create Test Scene** to build \`res://content/scenes/test/PixelForgeMonsterTest.tscn\` and open it for quick checks
 
 ## Install button behavior
 
@@ -494,6 +656,12 @@ Once enabled, the plugin adds a dock on the right side of the editor. Use it to:
 - \`res://content/scripts/\`
 
 The plugin expects the manifest at \`res://content/sprite_manifest.json\` unless you regenerate it with a different manifest path.
+
+## Monster scene path convention
+
+- If a manifest entry includes \`scenePath\`, the dock uses that scene directly.
+- Otherwise the dock infers \`res://content/scenes/monsters/<id>.tscn\`.
+- The generated test scene is written to \`res://content/scenes/test/PixelForgeMonsterTest.tscn\`.
 `;
 }
 

@@ -63,7 +63,9 @@ async function main() {
     "extends EditorPlugin",
     "DOCK_SLOT_RIGHT_UL",
     "remove_control_from_docks",
-    'preload("res://addons/pixel_forge/pixel_forge_dock.tscn")'
+    'preload("res://addons/pixel_forge/pixel_forge_dock.tscn")',
+    'set_editor_interface',
+    "get_editor_interface()"
   ];
 
   for (const snippet of requiredPluginScriptSnippets) {
@@ -84,7 +86,18 @@ async function main() {
     "DisplayServer.clipboard_set(_selected_sprite_path)",
     "func _on_install_pressed() -> void:",
     "func _install_content_pack() -> Dictionary:",
-    'Manifest field \'sprites\' must be an Array.'
+    'Manifest field \'sprites\' must be an Array.',
+    'const TEST_SCENE_PATH := "res://content/scenes/test/PixelForgeMonsterTest.tscn"',
+    "func _infer_scene_path(entry: Dictionary) -> String:",
+    'return "res://content/scenes/monsters/%s.tscn" % sprite_id',
+    "func _on_open_scene_pressed() -> void:",
+    "func _on_create_test_scene_pressed() -> void:",
+    "func _create_test_scene(entry: Dictionary) -> Dictionary:",
+    "ResourceLoader.exists(scene_path)",
+    "PackedScene.new()",
+    "ResourceSaver.save(packed_scene, TEST_SCENE_PATH)",
+    "_editor_interface.open_scene_from_path(scene_path)",
+    "_editor_interface.open_scene_from_path(TEST_SCENE_PATH)"
   ];
 
   for (const snippet of requiredDockScriptSnippets) {
@@ -98,6 +111,10 @@ async function main() {
     'path="res://addons/pixel_forge/pixel_forge_dock.gd"',
     'name="InstallButton"',
     'text = "Install Content Pack"',
+    'name="OpenSceneButton"',
+    'text = "Open Monster Scene"',
+    'name="CreateTestSceneButton"',
+    'text = "Create Test Scene"',
     'name="StatusLabel"',
     'name="CategoryFilter"',
     'name="SpriteList"',
@@ -116,8 +133,12 @@ async function main() {
     "sprite_manifest.json",
     "Copy Sprite Path",
     "Install Content Pack",
+    "Open Monster Scene",
+    "Create Test Scene",
     "overwrite",
-    "Missing source folders are reported as warnings"
+    "Missing source folders are reported as warnings",
+    "res://content/scenes/monsters/<id>.tscn",
+    "PixelForgeMonsterTest.tscn"
   ];
 
   for (const snippet of requiredReadmeSnippets) {

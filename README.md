@@ -167,6 +167,8 @@ The generated dock now includes:
 
 - `Refresh Manifest`
 - `Install Content Pack`
+- `Open Monster Scene`
+- `Create Test Scene`
 - a status label for success and warning feedback
 
 ## Godot monster scenes example
