@@ -2,6 +2,7 @@ import { access, readFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import path from "node:path";
 import { createGodotMonsterScenes } from "../dist/tools/createGodotMonsterScenes.js";
+import { createGodotSpriteFrames } from "../dist/tools/createGodotSpriteFrames.js";
 
 const projectRoot = process.cwd();
 
@@ -14,6 +15,12 @@ async function assertExists(targetPath, label) {
 }
 
 async function main() {
+  await createGodotSpriteFrames({
+    manifestPath: "examples/godot-import-pack/content/sprite_manifest.json",
+    outputDir: "examples/godot-import-pack",
+    spriteFramesDir: "content/resources/spriteframes"
+  });
+
   const result = await createGodotMonsterScenes({
     manifestPath: "examples/godot-import-pack/content/sprite_manifest.json",
     outputDir: "examples/godot-import-pack",
@@ -67,6 +74,9 @@ async function main() {
 
   const requiredAnimationSceneSnippets = [
     'type="AnimatedSprite2D"',
+    'type="SpriteFrames" path="res://content/resources/spriteframes/slime_t1_idle.tres" id="2"',
+    'sprite_frames = ExtResource("2")',
+    'autoplay = "idle"',
     'metadata/animation = "idle"',
     "metadata/frame_count = 2",
     "metadata/fps = 6",
@@ -97,7 +107,7 @@ async function main() {
     "AnimatedSprite2D",
     "Sprite2D",
     "SpriteFrames",
-    "TODO"
+    "If a matching SpriteFrames resource exists"
   ];
 
   for (const snippet of requiredReadmeSnippets) {

@@ -29,6 +29,7 @@ npm run dev
 - Godot 4 loader stub generation
 - Godot 4 editor plugin generation
 - Godot 4 monster scene generation
+- Godot 4 SpriteFrames resource generation
 - Batch monster pack generation
 - Family tier ladder generation
 - World monster pack generation
@@ -83,6 +84,7 @@ npm run dev
 npm run test:all
 npm run test:pipeline
 npm run test:godot-plugin
+npm run test:spriteframes
 npm run test:godot-scenes
 npm run test:monster-pack
 npm run test:world-pack
@@ -99,6 +101,7 @@ npm run test:world-pack
 - `test:godot-pack`
 - `test:godot-loader`
 - `test:godot-plugin`
+- `test:spriteframes`
 - `test:godot-scenes`
 - `test:monster-pack`
 - `test:saga-enemies`
@@ -130,6 +133,7 @@ Higher-level generation:
 - `create_godot_import_pack`
 - `create_godot_loader_stub`
 - `create_godot_editor_plugin`
+- `create_godot_spriteframes`
 - `create_godot_monster_scenes`
 - `create_monster_pack`
 - `create_saga_enemy_data`
@@ -175,6 +179,27 @@ This writes:
 - `examples/godot-import-pack/content/scenes/monsters/<id>.tscn`
 - `examples/godot-import-pack/content/scripts/MonsterActor.gd`
 - `examples/godot-import-pack/content/scenes/monsters/README_MONSTER_SCENES.md`
+
+## Godot SpriteFrames example
+
+Generate Godot 4 `SpriteFrames` resources from animation manifest entries:
+
+```json
+{
+  "manifestPath": "examples/godot-import-pack/content/sprite_manifest.json",
+  "outputDir": "examples/godot-import-pack",
+  "spriteFramesDir": "content/resources/spriteframes"
+}
+```
+
+This writes:
+
+- `examples/godot-import-pack/content/resources/spriteframes/<id>.tres`
+- `examples/godot-import-pack/content/resources/spriteframes/README_SPRITEFRAMES.md`
+
+Current limitation:
+
+- SpriteFrames generation currently assumes horizontal strip layout because strip direction is not yet stored in the manifest.
 
 ## Generated example artifacts
 

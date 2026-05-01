@@ -22,6 +22,10 @@ import {
   createGodotMonsterScenesInputSchema
 } from "./tools/createGodotMonsterScenes.js";
 import {
+  createGodotSpriteFrames,
+  createGodotSpriteFramesInputSchema
+} from "./tools/createGodotSpriteFrames.js";
+import {
   createGodotEditorPlugin,
   createGodotEditorPluginInputSchema
 } from "./tools/createGodotEditorPlugin.js";
@@ -231,6 +235,23 @@ server.tool(
   createGodotMonsterScenesInputSchema,
   async (input) => {
     const result = await createGodotMonsterScenes(input);
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(result, null, 2)
+        }
+      ]
+    };
+  }
+);
+
+server.tool(
+  "create_godot_spriteframes",
+  "Generate Godot 4 SpriteFrames resources from animation strip manifest entries for AnimatedSprite2D scenes.",
+  createGodotSpriteFramesInputSchema,
+  async (input) => {
+    const result = await createGodotSpriteFrames(input);
     return {
       content: [
         {
