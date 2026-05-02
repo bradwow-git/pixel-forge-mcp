@@ -61,6 +61,22 @@
       "loop": true,
       "animation": "idle_vertical",
       "stripDirection": "vertical"
+    },
+    {
+      "id": "toxic_slime_t1",
+      "name": "Toxic Slime",
+      "category": "monsters",
+      "family": "ooze",
+      "tier": 1,
+      "spritePath": "res://content/art/monsters/toxic_slime_t1.png"
+    },
+    {
+      "id": "comfyui_fallback_t1",
+      "name": "ComfyUI Fallback",
+      "category": "monsters",
+      "family": "ooze",
+      "tier": 1,
+      "spritePath": "res://content/art/monsters/comfyui_fallback_t1.png"
     }
   ]
 }

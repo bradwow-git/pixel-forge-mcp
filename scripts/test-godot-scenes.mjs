@@ -91,6 +91,7 @@ async function main() {
 
   const requiredActorScriptSnippets = [
     "extends Node2D",
+    "class_name PixelForgeMonsterActor",
     "@export var sprite_id: String = \"\"",
     "@export var family: String = \"\"",
     "@export var tier: int = 1",
@@ -101,6 +102,10 @@ async function main() {
     if (!actorScriptText.includes(snippet)) {
       throw new Error(`MonsterActor.gd is missing expected content: ${snippet}`);
     }
+  }
+
+  if (actorScriptText.includes("class_name MonsterActor")) {
+    throw new Error("MonsterActor.gd should not declare class_name MonsterActor.");
   }
 
   const requiredReadmeSnippets = [

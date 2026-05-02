@@ -10,6 +10,8 @@
     "setup:py": "node scripts/setup-python.mjs",
     "start": "node dist/index.js",
     "test:pipeline": "node scripts/test-pipeline.mjs",
+    "test:comfyui-provider": "node scripts/test-comfyui-provider.mjs",
+    "test:comfyui-real": "node scripts/test-comfyui-real.mjs",
     "test:pixelorama-bridge": "node scripts/test-pixelorama-bridge.mjs",
     "test:pixelorama-real": "node scripts/test-pixelorama-real.mjs",
     "test:animation": "node scripts/test-animation.mjs",
@@ -23,7 +25,8 @@
     "test:saga-enemies": "node scripts/test-saga-enemies.mjs",
     "test:family-ladder": "node scripts/test-family-ladder.mjs",
     "test:world-pack": "node scripts/test-world-pack.mjs",
-    "test:all": "npm run build && npm run test:pipeline && npm run test:pixelorama-bridge && npm run test:animation && npm run test:godot-pack && npm run test:godot-loader && npm run test:godot-plugin && npm run test:spriteframes && npm run test:spriteframes-direction && npm run test:godot-scenes && npm run test:monster-pack && npm run test:saga-enemies && npm run test:family-ladder && npm run test:world-pack"
+    "test:generate-sprite": "node scripts/test-generate-sprite.mjs",
+    "test:all": "npm run build && npm run test:pipeline && npm run test:generate-sprite && npm run test:comfyui-provider && npm run test:pixelorama-bridge && npm run test:animation && npm run test:godot-pack && npm run test:godot-loader && npm run test:godot-plugin && npm run test:spriteframes && npm run test:spriteframes-direction && npm run test:godot-scenes && npm run test:monster-pack && npm run test:saga-enemies && npm run test:family-ladder && npm run test:world-pack"
   },
   "keywords": [
     "mcp",

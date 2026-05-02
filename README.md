@@ -23,6 +23,8 @@ npm run dev
 - Local MCP server over stdio
 - Python + Pillow sprite pixelizing and palette enforcement
 - Sprite export into a local Godot mirror
+- Prompt-driven source generation with a local placeholder provider
+- Optional local ComfyUI prompt-to-image provider
 - Static and animation manifest entry generation
 - Optional Pixelorama bridge workspace creation
 - Godot import-pack generation
@@ -83,6 +85,8 @@ npm run build
 npm run dev
 npm run test:all
 npm run test:pipeline
+npm run test:generate-sprite
+npm run test:comfyui-provider
 npm run test:godot-plugin
 npm run test:spriteframes
 npm run test:spriteframes-direction
@@ -97,6 +101,8 @@ npm run test:world-pack
 
 - `build`
 - `test:pipeline`
+- `test:generate-sprite`
+- `test:comfyui-provider`
 - `test:pixelorama-bridge`
 - `test:animation`
 - `test:godot-pack`
@@ -113,6 +119,7 @@ npm run test:world-pack
 ## Current limitations
 
 - Pixelorama support is optional and currently stops at bridge/workspace generation rather than full CLI automation.
+- ComfyUI support is optional and requires a user-supplied API-format workflow export before real generation will work.
 - Example outputs under `examples/` are reused by tests, so sequential validation is preferred over ad hoc parallel test runs.
 - World-level pack generation shares the main example output folders instead of isolating per-world output roots.
 - Generated manifests and example assets are intended for local workflow validation, not as canonical shipping content.
@@ -121,6 +128,7 @@ npm run test:world-pack
 
 Core sprite pipeline:
 
+- `generate_sprite_from_prompt`
 - `pixelize_sprite`
 - `enforce_palette`
 - `export_sprite`
@@ -170,6 +178,74 @@ The generated dock now includes:
 - `Open Monster Scene`
 - `Create Test Scene`
 - a status label for success and warning feedback
+
+## Prompt-driven sprite generation example
+
+Generate a local source image from a prompt, then run it through the standard sprite pipeline:
+
+```json
+{
+  "id": "toxic_slime_t1",
+  "name": "Toxic Slime",
+  "prompt": "small toxic green slime monster, glowing eyes, dark fantasy pixel art concept",
+  "category": "monsters",
+  "family": "ooze",
+  "tier": 1,
+  "palette": "toxic",
+  "size": 32,
+  "provider": "placeholder",
+  "manifestPath": "examples/manifests/test-sprites.json"
+}
+```
+
+Provider notes:
+
+- `placeholder` is fully local and required for MVP 1.6. It uses Pillow to generate a simple source image under `examples/source/generated/`.
+- `openai` is a stub for now and returns `OpenAI provider not implemented yet`.
+- `comfyui` is now supported as an optional local provider. If it is unavailable and `allowProviderFallback` is `true`, Pixel Forge falls back to the placeholder provider.
+
+Config fields:
+
+- `defaultImageProvider` sets the provider used when the tool input omits `provider`.
+- `generatedSourceDir` controls where generated source PNGs are stored before pixelization.
+- `comfyuiBaseUrl` points to the local ComfyUI server, usually `http://127.0.0.1:8188`.
+- `comfyuiWorkflowPath` points to a saved ComfyUI API workflow JSON.
+- `comfyuiOutputDir` tracks the default ComfyUI output area for user reference.
+- `comfyuiTimeoutMs` controls prompt submission and polling timeout.
+
+Additional prompt-generation fields:
+
+- `negativePrompt`
+- `seed`
+- `width`
+- `height`
+- `allowProviderFallback`
+
+## ComfyUI setup
+
+1. Install and start ComfyUI locally.
+2. Open or build a text-to-image workflow in ComfyUI.
+3. Export the workflow in API format and save it to the path configured in `comfyuiWorkflowPath`.
+4. Replace the placeholder file at `config/comfyui/text_to_image_workflow.json` with your real workflow export.
+
+Included files:
+
+- `config/comfyui/text_to_image_workflow.json`
+  This starts as a placeholder so normal Pixel Forge tests do not require ComfyUI.
+- `config/comfyui/text_to_image_workflow.example.json`
+  This documents the expected placeholders and reminds you to export a real API-format workflow.
+
+ComfyUI test commands:
+
+```bash
+npm run test:comfyui-provider
+npm run test:comfyui-real
+```
+
+Behavior notes:
+
+- `test:comfyui-provider` does not require ComfyUI. It verifies the unreachable error path and the explicit placeholder fallback path.
+- `test:comfyui-real` reads your configured ComfyUI settings, checks whether ComfyUI is reachable, and exits cleanly with a warning if it is not.
 
 ## Godot monster scenes example
 

@@ -48,6 +48,10 @@ import {
   createManifestEntryInputSchema
 } from "./tools/createManifestEntry.js";
 import {
+  generateSpriteFromPrompt,
+  generateSpriteFromPromptInputSchema
+} from "./tools/generateSpriteFromPrompt.js";
+import {
   createPixeloramaProject,
   createPixeloramaProjectInputSchema
 } from "./tools/createPixeloramaProject.js";
@@ -320,6 +324,23 @@ server.tool(
   createSagaEnemyDataInputSchema,
   async (input) => {
     const result = await createSagaEnemyData(input);
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(result, null, 2)
+        }
+      ]
+    };
+  }
+);
+
+server.tool(
+  "generate_sprite_from_prompt",
+  "Generate a local source image from a prompt through a provider hook, then run the standard Pixel Forge sprite pipeline and manifest upsert flow.",
+  generateSpriteFromPromptInputSchema,
+  async (input) => {
+    const result = await generateSpriteFromPrompt(input);
     return {
       content: [
         {

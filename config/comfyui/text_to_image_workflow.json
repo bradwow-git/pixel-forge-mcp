@@ -1,0 +1,8 @@
+{
+  "_pixelForgeExample": true,
+  "_notes": [
+    "This is a placeholder ComfyUI workflow file for Pixel Forge.",
+    "Export a real API-format workflow from ComfyUI and replace this file before using provider=comfyui.",
+    "Required prompt placeholders: {{PROMPT}}, {{NEGATIVE_PROMPT}}, {{SEED}}, {{WIDTH}}, {{HEIGHT}}."
+  ]
+}

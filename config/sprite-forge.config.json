@@ -4,6 +4,12 @@
   "godotProjectRoot": "examples/godot-project",
   "pythonCommand": "python",
   "pythonVenvPath": ".venv",
+  "defaultImageProvider": "placeholder",
+  "generatedSourceDir": "examples/source/generated",
+  "comfyuiBaseUrl": "http://127.0.0.1:8188",
+  "comfyuiWorkflowPath": "config/comfyui/text_to_image_workflow.json",
+  "comfyuiOutputDir": "ComfyUI/output",
+  "comfyuiTimeoutMs": 120000,
   "enablePixeloramaBridge": true,
   "pixeloramaExecutablePath": "C:/Users/bradw/OneDrive/Documents/Pixelorama/Pixelorama.exe",
   "pixeloramaProjectTemplatePath": null

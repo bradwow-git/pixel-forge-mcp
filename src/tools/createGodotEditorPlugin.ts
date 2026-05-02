@@ -15,7 +15,7 @@ type CreateGodotEditorPluginInput = z.infer<
 >;
 
 function buildPluginConfig(
-  pluginName: string,
+  _pluginName: string,
   displayName: string
 ): string {
   return `[plugin]
@@ -24,7 +24,7 @@ name="${displayName}"
 description="Browse Pixel Forge sprite manifests inside the Godot 4 editor."
 author="pixel-forge-mcp"
 version="1.0.0-rc1"
-script="res://addons/${pluginName}/${pluginName}_plugin.gd"
+script="pixel_forge_plugin.gd"
 `;
 }
 
@@ -128,19 +128,18 @@ func load_manifest() -> void:
 \tvar json := JSON.new()
 \tvar parse_error := json.parse(raw_text)
 \tif parse_error != OK:
-\t\t_set_status("Failed to parse manifest JSON at %s" % manifest_path)
+\t\t_set_status("Failed to parse manifest JSON at %s (error %s)" % [manifest_path, str(parse_error)])
 \t\t_rebuild_category_filter([])
 \t\treturn
 
 \tvar data: Variant = json.data
-\tif typeof(data) != TYPE_DICTIONARY:
-\t\t_set_status("Manifest root must be a Dictionary.")
-\t\t_rebuild_category_filter([])
-\t\treturn
-
-\tvar sprites: Variant = data.get("sprites", [])
-\tif typeof(sprites) != TYPE_ARRAY:
-\t\t_set_status("Manifest field 'sprites' must be an Array.")
+\tvar sprites: Variant = []
+\tif typeof(data) == TYPE_ARRAY:
+\t\tsprites = data
+\telif typeof(data) == TYPE_DICTIONARY and typeof(data["sprites"]) == TYPE_ARRAY:
+\t\tsprites = data["sprites"]
+\telse:
+\t\t_set_status("Manifest loaded but no sprites array found.")
 \t\t_rebuild_category_filter([])
 \t\treturn
 
@@ -151,6 +150,7 @@ func load_manifest() -> void:
 
 \t_rebuild_category_filter(_collect_categories())
 \t_apply_category_filter()
+\t_set_status_label("Loaded %d sprite(s) from %s" % [_entries.size(), manifest_path])
 
 
 func _collect_categories() -> Array[String]:
@@ -202,9 +202,9 @@ func _apply_category_filter() -> void:
 \t_count_label.text = "Sprites: %d" % _filtered_entries.size()
 \tif _filtered_entries.is_empty():
 \t\t_set_details_text("No sprites match the current filter.")
-\t\t_set_status_label("Manifest loaded with no matching sprites.")
+\t\t_set_status_label("Loaded %d sprite(s) from %s. No sprites match the current filter." % [_entries.size(), manifest_path])
 \telse:
-\t\t_set_status_label("Manifest loaded successfully.")
+\t\t_set_status_label("Loaded %d sprite(s) from %s" % [_entries.size(), manifest_path])
 
 
 func _set_status(message: String) -> void:
@@ -379,7 +379,7 @@ func _create_test_scene(entry: Dictionary) -> Dictionary:
 \t\troot.free()
 \t\treturn {
 \t\t\t"summary": "Failed to pack the test scene.",
-\t\t\t"log": "PackedScene.pack returned error code %s" % String(pack_error)
+\t\t\t"log": "PackedScene.pack returned error code %s" % str(pack_error)
 \t\t}
 
 \tvar save_error := ResourceSaver.save(packed_scene, TEST_SCENE_PATH)
@@ -387,7 +387,7 @@ func _create_test_scene(entry: Dictionary) -> Dictionary:
 \tif save_error != OK:
 \t\treturn {
 \t\t\t"summary": "Failed to save the test scene.",
-\t\t\t"log": "ResourceSaver.save returned error code %s" % String(save_error)
+\t\t\t"log": "ResourceSaver.save returned error code %s" % str(save_error)
 \t\t}
 
 \tif _editor_interface != null:

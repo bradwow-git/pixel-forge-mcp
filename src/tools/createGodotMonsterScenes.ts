@@ -45,7 +45,7 @@ function escapeGdString(input: string): string {
 
 function buildMonsterActorScript(): string {
   return `extends Node2D
-class_name MonsterActor
+class_name PixelForgeMonsterActor
 
 @export var sprite_id: String = ""
 @export var family: String = ""

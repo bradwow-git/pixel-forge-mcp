@@ -47,7 +47,7 @@ async function main() {
   const readmeText = await readFile(readmePath, "utf8");
 
   const requiredPluginConfigSnippets = [
-    'script="res://addons/pixel_forge/pixel_forge_plugin.gd"',
+    'script="pixel_forge_plugin.gd"',
     'name="Pixel Forge"',
     'version="1.0.0-rc1"'
   ];
@@ -56,6 +56,10 @@ async function main() {
     if (!pluginConfigText.includes(snippet)) {
       throw new Error(`Generated plugin.cfg is missing expected content: ${snippet}`);
     }
+  }
+
+  if (pluginConfigText.includes('script="res://addons/pixel_forge/pixel_forge_plugin.gd"')) {
+    throw new Error("Generated plugin.cfg should not use a res:// script path.");
   }
 
   const requiredPluginScriptSnippets = [
@@ -86,7 +90,12 @@ async function main() {
     "DisplayServer.clipboard_set(_selected_sprite_path)",
     "func _on_install_pressed() -> void:",
     "func _install_content_pack() -> Dictionary:",
-    'Manifest field \'sprites\' must be an Array.',
+    'typeof(data) == TYPE_ARRAY',
+    'typeof(data) == TYPE_DICTIONARY and typeof(data["sprites"]) == TYPE_ARRAY',
+    'sprites = data["sprites"]',
+    "Manifest loaded but no sprites array found.",
+    "Loaded %d sprite(s) from %s",
+    "Failed to parse manifest JSON at %s (error %s)",
     'const TEST_SCENE_PATH := "res://content/scenes/test/PixelForgeMonsterTest.tscn"',
     "func _infer_scene_path(entry: Dictionary) -> String:",
     'return "res://content/scenes/monsters/%s.tscn" % sprite_id',
@@ -103,6 +112,18 @@ async function main() {
   for (const snippet of requiredDockScriptSnippets) {
     if (!dockScriptText.includes(snippet)) {
       throw new Error(`Generated dock script is missing expected content: ${snippet}`);
+    }
+  }
+
+  const disallowedDockScriptSnippets = [
+    "String(parse_error)",
+    "String(pack_error)",
+    "String(save_error)"
+  ];
+
+  for (const snippet of disallowedDockScriptSnippets) {
+    if (dockScriptText.includes(snippet)) {
+      throw new Error(`Generated dock script still contains incompatible error conversion: ${snippet}`);
     }
   }
 

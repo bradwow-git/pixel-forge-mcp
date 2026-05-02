@@ -9,6 +9,12 @@ const spriteForgeConfigSchema = z.object({
   godotProjectRoot: z.string().min(1),
   pythonCommand: z.string().min(1),
   pythonVenvPath: z.string().min(1).default(".venv"),
+  defaultImageProvider: z.enum(["placeholder", "openai", "comfyui"]).default("placeholder"),
+  generatedSourceDir: z.string().min(1).default("examples/source/generated"),
+  comfyuiBaseUrl: z.string().min(1).default("http://127.0.0.1:8188"),
+  comfyuiWorkflowPath: z.string().min(1).default("config/comfyui/text_to_image_workflow.json"),
+  comfyuiOutputDir: z.string().min(1).default("ComfyUI/output"),
+  comfyuiTimeoutMs: z.number().int().positive().default(120000),
   enablePixeloramaBridge: z.boolean().default(false),
   pixeloramaExecutablePath: z.string().min(1).nullable().optional(),
   pixeloramaProjectTemplatePath: z.string().min(1).nullable().optional()
@@ -57,6 +63,11 @@ export async function getOutputRoot(): Promise<string> {
 export async function getGodotProjectRoot(): Promise<string> {
   const config = await loadConfig();
   return resolveProjectPath(config.godotProjectRoot);
+}
+
+export async function getGeneratedSourceDir(): Promise<string> {
+  const config = await loadConfig();
+  return resolveProjectPath(config.generatedSourceDir);
 }
 
 export async function getPixeloramaTemplatePath(): Promise<string | null> {
